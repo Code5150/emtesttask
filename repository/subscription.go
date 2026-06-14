@@ -10,8 +10,10 @@ import (
 
 type SubscriptionRepository interface {
 	GetSubscriptionByID(ctx context.Context, id uint64) (*entity.Subscription, error)
-	AddSubscription(ctx context.Context, newSub *entity.Subscription) (*entity.Subscription, error)
 	GetSubscriptionsPaged(ctx context.Context, pagedRequest *model.PagedRequest) ([]entity.Subscription, error)
+	AddSubscription(ctx context.Context, newSub *entity.Subscription) (*entity.Subscription, error)
+	UpdateSubscription(ctx context.Context, id uint64, newSub *entity.Subscription) (*entity.Subscription, error)
+	DeleteSubscription(ctx context.Context, id uint64) error
 }
 
 type subscriptionRepository struct {
@@ -38,6 +40,22 @@ func (r *subscriptionRepository) AddSubscription(ctx context.Context, newSub *en
 		return nil, err
 	}
 	return newSub, nil
+}
+
+func (r *subscriptionRepository) UpdateSubscription(ctx context.Context, id uint64, newSub *entity.Subscription) (*entity.Subscription, error) {
+	_, err := gorm.G[entity.Subscription](r.db).Where("id = ?", id).Select("*").Omit("id").Updates(ctx, *newSub)
+	if err != nil {
+		return nil, err
+	}
+	return newSub, nil
+}
+
+func (r *subscriptionRepository) DeleteSubscription(ctx context.Context, id uint64) error {
+	_, err := gorm.G[entity.Subscription](r.db).Where("id = ?", id).Delete(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r *subscriptionRepository) GetSubscriptionsPaged(ctx context.Context, pagedRequest *model.PagedRequest) ([]entity.Subscription, error) {
