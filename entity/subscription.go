@@ -14,3 +14,8 @@ type Subscription struct {
 	StartDate   time.Time  `gorm:"column:start_date"`
 	EndDate     *time.Time `gorm:"column:end_date"`
 }
+
+type SubscriptionSum struct {
+	ServiceName string `gorm:"column:sn"`
+	Sum         uint64 `gorm:"column:sum_price"`
+}

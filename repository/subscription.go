@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"strings"
+
 	"emtesttask/entity"
 	"emtesttask/model"
 
@@ -11,6 +13,7 @@ import (
 type SubscriptionRepository interface {
 	GetSubscriptionByID(ctx context.Context, id uint64) (*entity.Subscription, error)
 	GetSubscriptionsPaged(ctx context.Context, pagedRequest *model.PagedRequest) ([]entity.Subscription, error)
+	GetSubscriptionsSum(ctx context.Context, subscriptionFilter *model.SubscriptionSumRequest) (*model.SubscriptionSumResponse, error)
 	AddSubscription(ctx context.Context, newSub *entity.Subscription) (*entity.Subscription, error)
 	UpdateSubscription(ctx context.Context, id uint64, newSub *entity.Subscription) (*entity.Subscription, error)
 	DeleteSubscription(ctx context.Context, id uint64) error
@@ -68,4 +71,21 @@ func (r *subscriptionRepository) GetSubscriptionsPaged(ctx context.Context, page
 		return nil, err
 	}
 	return result, err
+}
+
+func (r *subscriptionRepository) GetSubscriptionsSum(ctx context.Context, subscriptionFilter *model.SubscriptionSumRequest) (*model.SubscriptionSumResponse, error) {
+
+	var result entity.SubscriptionSum
+
+	tx := r.db.Table("subscriptions").Select("lower(service_name) as sn, sum(price) as sum_price").Where(
+		"lower(service_name) = ?", strings.ToLower(subscriptionFilter.ServiceName),
+	)
+	if subscriptionFilter.EndDate != nil {
+		tx = tx.Where("(start_date >= ? and end_date <= ?)", subscriptionFilter.StartDate, subscriptionFilter.EndDate)
+	} else {
+		tx = tx.Where("start_date >= ?", subscriptionFilter.StartDate)
+	}
+	tx.Group("service_name").Take(&result)
+
+	return &model.SubscriptionSumResponse{SumPrice: result.Sum}, nil
 }

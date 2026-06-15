@@ -155,11 +155,37 @@ func (c *SubscriptionController) DeleteSubscription(ctx *gin.Context) {
 	}
 }
 
+// GetSubscriptionsSum             godoc
+// @Summary      Gets subscriptions sum by user Id, service name and period
+// @Description  Responds with the subscriptions sum
+// @Tags         Subscriptions
+// @Produce      json
+// @Param 		 subscriptionFilter body model.SubscriptionSumRequest true "Subscription filter"
+// @Success      200  {object}  model.SubscriptionSumResponse
+// @Router       /subscriptions/sum [post]
+func (c *SubscriptionController) GetSubscriptionsSum(ctx *gin.Context) {
+
+	var subscriptionFilter model.SubscriptionSumRequest
+	if err := ctx.BindJSON(&subscriptionFilter); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	result, err := c.service.GetSubscriptionsSum(ctx, &subscriptionFilter)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, result)
+}
+
 func (c *SubscriptionController) RegisterRoutes(router *gin.Engine) {
 	api := router.Group("/subscriptions")
 	{
 		api.GET("/:id", c.GetByID)
 		api.POST("/page", c.GetPaged)
+		api.POST("/sum", c.GetSubscriptionsSum)
 		api.PUT("/new", c.AddSubscription)
 		api.POST("/update/:id", c.UpdateSubscription)
 		api.DELETE("/delete/:id", c.DeleteSubscription)

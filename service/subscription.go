@@ -18,6 +18,7 @@ import (
 type SubscriptionService interface {
 	GetSubscriptionByID(ctx context.Context, id uint64) (*model.SubscriptionDTO, error)
 	GetSubscriptionsPaged(ctx context.Context, pagedRequest *model.PagedRequest) ([]model.SubscriptionDTO, error)
+	GetSubscriptionsSum(ctx context.Context, subscriptionFilter *model.SubscriptionSumRequest) (*model.SubscriptionSumResponse, error)
 	AddSubscription(ctx context.Context, newSub *model.SubscriptionDTO) (*model.SubscriptionDTO, error)
 	UpdateSubscription(ctx context.Context, id uint64, newSub *model.SubscriptionDTO) (*model.SubscriptionDTO, error)
 	DeleteSubscription(ctx context.Context, id uint64) error
@@ -67,6 +68,11 @@ func (s *subscriptionService) GetSubscriptionsPaged(ctx context.Context, pagedRe
 		return nil, err
 	}
 	return result, nil
+}
+
+func (s *subscriptionService) GetSubscriptionsSum(ctx context.Context, subscriptionFilter *model.SubscriptionSumRequest) (*model.SubscriptionSumResponse, error) {
+	log.Print(subscriptionFilter)
+	return s.repo.GetSubscriptionsSum(ctx, subscriptionFilter)
 }
 
 func (s *subscriptionService) AddSubscription(ctx context.Context, newSub *model.SubscriptionDTO) (*model.SubscriptionDTO, error) {
