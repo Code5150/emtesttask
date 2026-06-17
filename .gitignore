@@ -2,3 +2,4 @@ go.sum
 emtesttask.exe
 wire_gen.go
 docs/*
+config.yaml
